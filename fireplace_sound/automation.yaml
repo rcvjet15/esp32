@@ -1,6 +1,7 @@
 # ---------------------------------------------------------------------------
-# 1. Add this to Home Assistant `configuration.yaml` (under the `input_select:`
-#    key — create the key if it does not exist):
+# Home Assistant configuration for the Fireplace Sound System.
+#
+# 1. Add to `configuration.yaml` (create the keys if they do not exist):
 #
 #   input_select:
 #     fireplace_sound:
@@ -11,52 +12,58 @@
 #         - giggle
 #       initial: fireplace_crackle
 #
-#    Each option is a WAV filename (no extension) placed in
-#    /config/www/sounds/. Add a new option + a matching .wav file to add a
-#    sound. The selection is persistent in HA (restored across restarts), so
-#    the fireplace always resumes the last-chosen sound.
+#   input_boolean:
+#     fireplace_sound_enabled:
+#       name: Fireplace Sound Enabled
+#       icon: mdi:volume-high
+#       initial: true
 #
-#    Replace <HA_IP> below with your Home Assistant host IP.
+#    - Each `input_select` option is a WAV filename (no extension) in
+#      /config/www/sounds/. Add an option + matching .wav to add a sound.
+#    - `input_boolean.fireplace_sound_enabled` is the persistent on/off toggle.
+#
+#    Both live in Home Assistant (which is always powered), so their state
+#    survives the ESP32 resetting or losing power — this is the "remembered
+#    after reset/power-off" behaviour. The fireplace always resumes the
+#    last-chosen sound and on/off state.
+#
+# 2. Add the automations below to `automations.yaml` (replace <HA_IP>).
 # ---------------------------------------------------------------------------
 
-- id: fireplace_sound_on
-  alias: "Fireplace Sound - Turn On"
+- id: fireplace_sound_control
+  alias: "Fireplace Sound - Control"
   trigger:
     - platform: state
       entity_id: switch.fireplace_power
-      to: "on"
-  action:
-    - service: media_player.play_media
-      target:
-        entity_id: media_player.fireplace_sound
-      data:
-        media_content_id: "http://<HA_IP>:8123/local/sounds/{{ states('input_select.fireplace_sound') }}.wav"
-        media_content_type: "music"
-
-- id: fireplace_sound_off
-  alias: "Fireplace Sound - Turn Off"
-  trigger:
     - platform: state
-      entity_id: switch.fireplace_power
-      to: "off"
-  action:
-    - service: media_player.media_stop
-      target:
-        entity_id: media_player.fireplace_sound
-
-- id: fireplace_sound_change
-  alias: "Fireplace Sound - Change Selection"
-  trigger:
+      entity_id: input_boolean.fireplace_sound_enabled
     - platform: state
       entity_id: input_select.fireplace_sound
-  condition:
-    - condition: state
-      entity_id: switch.fireplace_power
-      state: "on"
+    # Loop: replay when playback finishes and returns to idle.
+    - platform: state
+      entity_id: media_player.fireplace_sound
+      to: "idle"
   action:
-    - service: media_player.play_media
-      target:
-        entity_id: media_player.fireplace_sound
-      data:
-        media_content_id: "http://<HA_IP>:8123/local/sounds/{{ states('input_select.fireplace_sound') }}.wav"
-        media_content_type: "music"
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: switch.fireplace_power
+              state: "on"
+            - condition: state
+              entity_id: input_boolean.fireplace_sound_enabled
+              state: "on"
+          sequence:
+            # Wait for the ESP32 to come online after boot (up to 30 s).
+            - wait_template: "{{ not is_state('media_player.fireplace_sound', 'unavailable') }}"
+              timeout: "00:00:30"
+              continue_on_timeout: false
+            - service: media_player.play_media
+              target:
+                entity_id: media_player.fireplace_sound
+              data:
+                media_content_id: "http://<HA_IP>:8123/local/sounds/{{ states('input_select.fireplace_sound') }}.wav"
+                media_content_type: "music"
+      default:
+        - service: media_player.media_stop
+          target:
+            entity_id: media_player.fireplace_sound

@@ -22,22 +22,30 @@ Power the ESP32-S3 via USB; take the amp's VIN from the board's **3.3V** rail.
 > only 3.3V, so the amp never registers a valid "high" and stays silent. At 3.3V
 > supply the amp runs within its 2.5–5.5V range and reliably detects the logic.
 
-## Audio preparation
+## Audio files
+
+The media player is configured for **WAV** (16-bit mono). Ready-made clips are
+in `sounds/`:
+
+- `fireplace_crackle.wav` (60 s)
+- `giggle.wav` (4 s test clip)
+
+Copy them into Home Assistant:
 
 ```bash
-ffmpeg -i source.mp3 -ac 1 -ar 16000 -b:a 64k fireplace_crackle.mp3
+/config/www/sounds/fireplace_crackle.wav
+/config/www/sounds/giggle.wav
 ```
 
-Copy `fireplace_crackle.mp3` into Home Assistant:
+They are served at `http://<HA_IP>:8123/local/sounds/<name>.wav`.
+
+To add a sound, drop a 16-bit mono WAV into `/config/www/sounds/` and add its
+name to the `input_select.fireplace_sound` options. Convert any audio with
+`afconvert` (macOS, no ffmpeg needed — ffmpeg is broken on this machine):
 
 ```bash
-/config/www/sounds/fireplace_crackle.mp3
+afconvert -f WAVE -d LEI16@16000 -c 1 input.mp3 output.wav
 ```
-
-It is then served at `http://<HA_IP>:8123/local/sounds/fireplace_crackle.mp3`.
-
-> If MP3 playback fails on the media player, re-encode to mono 16-bit WAV:
-> `ffmpeg -i source.mp3 -ac 1 -ar 16000 fireplace_crackle.wav`
 
 ## Flashing
 
@@ -51,10 +59,18 @@ It is then served at `http://<HA_IP>:8123/local/sounds/fireplace_crackle.mp3`.
 
 ## Home Assistant automations
 
-Paste the contents of `automation.yaml` into `automations.yaml`
+Add the `input_select` and `input_boolean` from the top of `automation.yaml`
+into `configuration.yaml`, then paste the automation into `automations.yaml`
 (or add via Settings → Automations → YAML edit). Replace `<HA_IP>` with your
-Home Assistant host IP. The automation starts playback when `switch.fireplace_power`
-turns on and stops it when it turns off.
+Home Assistant host IP.
+
+- `input_select.fireplace_sound` — pick which sound to play (persistent).
+- `input_boolean.fireplace_sound_enabled` — the on/off toggle (persistent).
+
+Both live in Home Assistant (always powered), so their state survives the ESP32
+resetting or losing power. The control automation plays the selected sound when
+`switch.fireplace_power` is on **and** `fireplace_sound_enabled` is on, and stops
+otherwise.
 
 ## Verification
 

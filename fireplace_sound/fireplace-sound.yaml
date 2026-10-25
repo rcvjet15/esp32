@@ -25,14 +25,26 @@ i2s_audio:
 
 speaker:
   - platform: i2s_audio
-    id: fireplace_speaker
+    id: out_speaker
     i2s_audio_id: i2s_bus
     dac_type: external
     i2s_dout_pin: GPIO18
-    mode: mono
+    channel: mono
+
+  - platform: mixer
+    id: mixer_speaker
+    output_speaker: out_speaker
+    source_speakers:
+      - id: ann_source
+      - id: media_source
 
 media_player:
-  - platform: i2s_audio
+  - platform: speaker
     id: fireplace_media_player
     name: "Fireplace Sound"
-    speaker: fireplace_speaker
+    announcement_pipeline:
+      speaker: ann_source
+      format: WAV
+    media_pipeline:
+      speaker: media_source
+      format: WAV

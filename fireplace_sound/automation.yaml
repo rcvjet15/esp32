@@ -1,0 +1,62 @@
+# ---------------------------------------------------------------------------
+# 1. Add this to Home Assistant `configuration.yaml` (under the `input_select:`
+#    key — create the key if it does not exist):
+#
+#   input_select:
+#     fireplace_sound:
+#       name: Fireplace Sound
+#       icon: mdi:campfire
+#       options:
+#         - fireplace_crackle
+#         - giggle
+#       initial: fireplace_crackle
+#
+#    Each option is a WAV filename (no extension) placed in
+#    /config/www/sounds/. Add a new option + a matching .wav file to add a
+#    sound. The selection is persistent in HA (restored across restarts), so
+#    the fireplace always resumes the last-chosen sound.
+#
+#    Replace <HA_IP> below with your Home Assistant host IP.
+# ---------------------------------------------------------------------------
+
+- id: fireplace_sound_on
+  alias: "Fireplace Sound - Turn On"
+  trigger:
+    - platform: state
+      entity_id: switch.fireplace_power
+      to: "on"
+  action:
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.fireplace_sound
+      data:
+        media_content_id: "http://<HA_IP>:8123/local/sounds/{{ states('input_select.fireplace_sound') }}.wav"
+        media_content_type: "music"
+
+- id: fireplace_sound_off
+  alias: "Fireplace Sound - Turn Off"
+  trigger:
+    - platform: state
+      entity_id: switch.fireplace_power
+      to: "off"
+  action:
+    - service: media_player.media_stop
+      target:
+        entity_id: media_player.fireplace_sound
+
+- id: fireplace_sound_change
+  alias: "Fireplace Sound - Change Selection"
+  trigger:
+    - platform: state
+      entity_id: input_select.fireplace_sound
+  condition:
+    - condition: state
+      entity_id: switch.fireplace_power
+      state: "on"
+  action:
+    - service: media_player.play_media
+      target:
+        entity_id: media_player.fireplace_sound
+      data:
+        media_content_id: "http://<HA_IP>:8123/local/sounds/{{ states('input_select.fireplace_sound') }}.wav"
+        media_content_type: "music"

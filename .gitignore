@@ -1,0 +1,8 @@
+.DS_Store
+__pycache__/
+*.pyc
+.aider.chat.history.md
+.aider.input.history
+*.ino.bin
+*.bin
+.pio/

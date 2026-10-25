@@ -1,0 +1,38 @@
+esphome:
+  name: fireplace-sound
+  friendly_name: "Fireplace Sound Player"
+
+esp32:
+  board: esp32-s3-devkitc1-n16r8
+  framework:
+    type: esp-idf
+
+wifi:
+  ssid: "YOUR_WIFI_SSID"
+  password: "YOUR_WIFI_PASSWORD"
+
+api:
+
+ota:
+  - platform: esphome
+
+logger:
+
+i2s_audio:
+  - id: i2s_bus
+    i2s_lrclk_pin: GPIO4
+    i2s_bclk_pin: GPIO5
+
+speaker:
+  - platform: i2s_audio
+    id: fireplace_speaker
+    i2s_audio_id: i2s_bus
+    dac_type: external
+    i2s_dout_pin: GPIO18
+    mode: mono
+
+media_player:
+  - platform: i2s_audio
+    id: fireplace_media_player
+    name: "Fireplace Sound"
+    speaker: fireplace_speaker

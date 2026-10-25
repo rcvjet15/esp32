@@ -52,6 +52,7 @@ media_player:
   - platform: speaker
     id: fireplace_media_player
     name: "Fireplace Sound"
+    volume_initial: 1.0
     announcement_pipeline:
       speaker: ann_source
       format: MP3

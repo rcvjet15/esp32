@@ -40,6 +40,7 @@ speaker:
     dac_type: external
     i2s_dout_pin: GPIO18
     channel: mono
+    sample_rate: 44100
 
   - platform: mixer
     id: fireplace_mixer

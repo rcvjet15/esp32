@@ -50,7 +50,7 @@
       entity_id: input_select.fireplace_sound
     # Loop: replay when playback finishes and returns to idle.
     - platform: state
-      entity_id: media_player.fireplace_sound
+      entity_id: media_player.fireplace_sound_player_fireplace_sound
       to: "idle"
   action:
     - choose:
@@ -63,16 +63,16 @@
               state: "on"
           sequence:
             # Wait for the ESP32 to come online after boot (up to 30 s).
-            - wait_template: "{{ not is_state('media_player.fireplace_sound', 'unavailable') }}"
+            - wait_template: "{{ not is_state('media_player.fireplace_sound_player_fireplace_sound', 'unavailable') }}"
               timeout: "00:00:30"
               continue_on_timeout: false
             - service: media_player.play_media
               target:
-                entity_id: media_player.fireplace_sound
+                entity_id: media_player.fireplace_sound_player_fireplace_sound
               data:
                 media_content_id: "http://192.168.1.104:8123/local/sounds/{{ states('input_select.fireplace_sound') }}.mp3"
                 media_content_type: "music"
       default:
         - service: media_player.media_stop
           target:
-            entity_id: media_player.fireplace_sound
+            entity_id: media_player.fireplace_sound_player_fireplace_sound

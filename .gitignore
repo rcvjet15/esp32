@@ -6,3 +6,5 @@ __pycache__/
 *.ino.bin
 *.bin
 .pio/
+secrets.yaml
+.esphome/

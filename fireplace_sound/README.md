@@ -24,28 +24,26 @@ Power the ESP32-S3 via USB; take the amp's VIN from the board's **3.3V** rail.
 
 ## Audio files
 
-The media player is configured for **WAV** (16-bit mono). Ready-made clips are
-in `sounds/`:
+The media player is configured for **MP3** (mono, 16 kHz, 64 kbps). Ready-made
+clips are in `sounds/`:
 
-- `fireplace_crackle.wav` (60 s)
-- `giggle.wav` (4 s test clip)
+- `fireplace_1.mp3`
+- `fireplace_3.mp3`
+- `cozy_fireplace.mp3`
+- `fire_crackling_bbq.mp3`
+- `fireplace_heavy.mp3`
+- `living_room_fireplace.mp3`
 
-Copy them into Home Assistant:
-
-```bash
-/config/www/sounds/fireplace_crackle.wav
-/config/www/sounds/giggle.wav
-```
-
-They are served at `http://<HA_IP>:8123/local/sounds/<name>.wav`.
-
-To add a sound, drop a 16-bit mono WAV into `/config/www/sounds/` and add its
-name to the `input_select.fireplace_sound` options. Convert any audio with
-`afconvert` (macOS, no ffmpeg needed — ffmpeg is broken on this machine):
+Copy them into Home Assistant's `/config/www/sounds/`:
 
 ```bash
-afconvert -f WAVE -d LEI16@16000 -c 1 input.mp3 output.wav
+/config/www/sounds/fireplace_1.mp3
 ```
+
+They are served at `http://<HA_IP>:8123/local/sounds/<name>.mp3`.
+
+To add a sound, drop a mono 16 kHz MP3 into `/config/www/sounds/` and add its
+name to the `input_select.fireplace_sound` options.
 
 ## Flashing
 

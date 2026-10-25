@@ -8,9 +8,13 @@
 #       name: Fireplace Sound
 #       icon: mdi:campfire
 #       options:
-#         - fireplace_crackle
-#         - giggle
-#       initial: fireplace_crackle
+#         - fireplace_1
+#         - fireplace_3
+#         - cozy_fireplace
+#         - fire_crackling_bbq
+#         - fireplace_heavy
+#         - living_room_fireplace
+#       initial: fireplace_1
 #
 #   input_boolean:
 #     fireplace_sound_enabled:
@@ -18,8 +22,8 @@
 #       icon: mdi:volume-high
 #       initial: true
 #
-#    - Each `input_select` option is a WAV filename (no extension) in
-#      /config/www/sounds/. Add an option + matching .wav to add a sound.
+#    - Each `input_select` option is an MP3 filename (no extension) in
+#      /config/www/sounds/. Add an option + matching .mp3 to add a sound.
 #    - `input_boolean.fireplace_sound_enabled` is the persistent on/off toggle.
 #
 #    Both live in Home Assistant (which is always powered), so their state
@@ -27,14 +31,19 @@
 #    after reset/power-off" behaviour. The fireplace always resumes the
 #    last-chosen sound and on/off state.
 #
-# 2. Add the automations below to `automations.yaml` (replace <HA_IP>).
+# 2. Add the automations below to `automations.yaml`. The Home Assistant IP is
+#    already set to 192.168.1.104 — adjust if your HA IP differs.
+#
+#    NOTE: the fireplace on/off signal is `switch.fireplace_master` (a template
+#    switch that is "on" while the fireplace is running, based on
+#    sensor.uticnica_bor_power), not `switch.fireplace_power`.
 # ---------------------------------------------------------------------------
 
 - id: fireplace_sound_control
   alias: "Fireplace Sound - Control"
   trigger:
     - platform: state
-      entity_id: switch.fireplace_power
+      entity_id: switch.fireplace_master
     - platform: state
       entity_id: input_boolean.fireplace_sound_enabled
     - platform: state
@@ -47,7 +56,7 @@
     - choose:
         - conditions:
             - condition: state
-              entity_id: switch.fireplace_power
+              entity_id: switch.fireplace_master
               state: "on"
             - condition: state
               entity_id: input_boolean.fireplace_sound_enabled
@@ -61,7 +70,7 @@
               target:
                 entity_id: media_player.fireplace_sound
               data:
-                media_content_id: "http://<HA_IP>:8123/local/sounds/{{ states('input_select.fireplace_sound') }}.wav"
+                media_content_id: "http://192.168.1.104:8123/local/sounds/{{ states('input_select.fireplace_sound') }}.mp3"
                 media_content_type: "music"
       default:
         - service: media_player.media_stop

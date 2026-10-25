@@ -44,7 +44,7 @@ media_player:
     name: "Fireplace Sound"
     announcement_pipeline:
       speaker: ann_source
-      format: WAV
+      format: MP3
     media_pipeline:
       speaker: media_source
-      format: WAV
+      format: MP3

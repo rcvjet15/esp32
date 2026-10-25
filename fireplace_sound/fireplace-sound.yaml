@@ -19,6 +19,11 @@ ota:
 
 logger:
 
+audio:
+  codecs:
+    mp3:
+      buffer_memory: psram
+
 i2s_audio:
   - id: i2s_bus
     i2s_lrclk_pin: GPIO4

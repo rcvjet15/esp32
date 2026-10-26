@@ -22,9 +22,30 @@ Power the ESP32-S3 via USB; take the amp's VIN from the board's **3.3V** rail.
 > only 3.3V, so the amp never registers a valid "high" and stays silent. At 3.3V
 > supply the amp runs within its 2.5–5.5V range and reliably detects the logic.
 
+## Louder / better sound (upgrade path)
+
+The amp tops out at ~1.4 W into 4Ω at 3.3V. For more:
+
+- **4Ω speaker** (3"–4", 3–10 W, sensitivity ≥85 dB/W/m) → ~2× power vs 8Ω.
+- **Sealed enclosure** for the speaker — restores bass/body (bare drivers sound thin).
+- **5V supply + level shifter** → full ~3.2W. A level shifter (BSS138 4-channel
+  module, or 74LVC245/74AHCT125) translates the ESP32's 3.3V I2S lines to 5V:
+
+  | Level shifter | Connect to |
+  |---------------|-----------|
+  | HV (high side) | 5V (amp VIN rail) |
+  | LV (low side)  | 3.3V (ESP32 rail) |
+  | GND            | common ground |
+  | BCLK, LRC, DIN (3 channels) | ESP32 GPIO5/GPIO4/GPIO18 (LV) → MAX98357A (HV) |
+
+  Then move MAX98357A `VIN` to **5V** and keep `GAIN` floating (+9 dB — +15 dB clips).
+  No firmware change needed; the ESP32 still outputs 3.3V logic.
+
+Note: a 74HC595 is a **shift register**, not a level shifter — it won't work here.
+
 ## Audio files
 
-The media player is configured for **MP3** (mono, 16 kHz, 64 kbps). Ready-made
+The media player is configured for **MP3** (mono, 44.1 kHz, 128 kbps). Ready-made
 clips are in `sounds/`:
 
 - `fireplace_1.mp3`
@@ -42,7 +63,7 @@ Copy them into Home Assistant's `/config/www/sounds/`:
 
 They are served at `http://<HA_IP>:8123/local/sounds/<name>.mp3`.
 
-To add a sound, drop a mono 16 kHz MP3 into `/config/www/sounds/` and add its
+To add a sound, drop a mono 44.1 kHz MP3 into `/config/www/sounds/` and add its
 name to the `input_select.fireplace_sound` options.
 
 ## Flashing
@@ -53,7 +74,7 @@ name to the `input_select.fireplace_sound` options.
 4. First flash: connect the S3 via USB and use the ESPHome **web flasher**
    (`https://web.esphome.io`, browser WebSerial) or download the compiled `.bin`
    from the dashboard and flash with esptool.
-5. In Home Assistant, **adopt** the device. It appears as `media_player.fireplace_sound`.
+5. In Home Assistant, **adopt** the device. It appears as `media_player.fireplace_sound_player_fireplace_sound`.
 
 ## Home Assistant automations
 
@@ -67,13 +88,13 @@ Home Assistant host IP.
 
 Both live in Home Assistant (always powered), so their state survives the ESP32
 resetting or losing power. The control automation plays the selected sound when
-`switch.fireplace_power` is on **and** `fireplace_sound_enabled` is on, and stops
+`switch.fireplace_master` is on **and** `fireplace_sound_enabled` is on, and stops
 otherwise.
 
 ## Verification
 
 1. Flash `test/i2s_tone_test/i2s_tone_test.ino` first to confirm the amp + speaker
    output a clean tone (no HA/Wi-Fi required).
-2. After flashing ESPHome, play a test clip on `media_player.fireplace_sound` and
+2. After flashing ESPHome, play a test clip on `media_player.fireplace_sound_player_fireplace_sound` and
    confirm clean audio and a working volume slider.
-3. Toggle `switch.fireplace_power` and confirm the sound starts/stops.
+3. Toggle `switch.fireplace_master` and confirm the sound starts/stops.

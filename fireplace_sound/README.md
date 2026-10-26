@@ -43,6 +43,28 @@ The amp tops out at ~1.4 W into 4Ω at 3.3V. For more:
 
 Note: a 74HC595 is a **shift register**, not a level shifter — it won't work here.
 
+**Don't mix 8Ω + 4Ω speakers** on the same mono channel: the 4Ω draws ~2× the
+power, so they'd play unevenly; in parallel the load drops below 4Ω and can
+overheat the amp; in series (12Ω) output collapses. Use one matched 4Ω driver.
+
+### Speaker enclosure (Tupperware sealed box)
+
+A bare driver cancels its own bass; a sealed enclosure restores the low-end body.
+Build: a rigid plastic food container + 3" driver, fully airtight.
+
+1. **Cutout** — trace the driver's inner cone (~70–75 mm) onto a wall/lid, cut with
+   a Dremel/hobby knife, deburr, and drill 4 corner screw holes.
+2. **Mount + seal** — foam tape/hot-glue/silicone around the rim; screw the driver
+   in tight. The box must be **completely airtight** (leaks kill the bass).
+3. **Wire exit** — drill a small hole for the speaker wires, feed through, seal
+   with hot glue.
+4. **Dampen** — add a loose handful of polyfill/cotton wool inside before sealing,
+   then snap the lid shut.
+
+![Enclosure cutout](enclosure/enclosure-cutout.jpeg)
+
+![Enclosure assembly](enclosure/enclosure-assembly.jpeg)
+
 ## Audio files
 
 The media player is configured for **MP3** (mono, 44.1 kHz, 128 kbps). Ready-made
